@@ -128,30 +128,34 @@ long LinuxParser::ActiveJiffies(int pid) {
   return utime + stime;
 }
 
-std::istringstream LinuxParser::readCpuInfo() {
+std::string LinuxParser::readCpuInfo() {
   std::ifstream file(kProcDirectory + kStatFilename);
-  std::string line, cpu;
+  std::string line, info;
   if (file.is_open()) {
     if (std::getline(file, line)) { // cpu info on first line
       std::istringstream s(line);
-      s >> cpu; // discard
-      return s;
+      info = s.str();
     }
   }
+  return info;
 }
 
 // credit: https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
 long LinuxParser::ActiveJiffies() { 
   auto info = readCpuInfo(); 
+  std::istringstream ss(info);
+  std::string cpu;
   long tuser, tnice, tsys, tidle, twait, tirq, tsoft, tsteal, tguest, tgn;
-  info >> tuser >> tnice >> tsys >> tidle >> twait >> tirq >> tsoft >> tsteal >> tguest >> tgn;
+  ss >> cpu >> tuser >> tnice >> tsys >> tidle >> twait >> tirq >> tsoft >> tsteal >> tguest >> tgn;
   return tuser + tnice + tsys + tirq + tsoft + tsteal;
 }
 
 long LinuxParser::IdleJiffies() { 
   auto info = readCpuInfo(); 
+  std::istringstream ss(info);
+  std::string cpu;
   long tuser, tnice, tsys, tidle, twait, tirq, tsoft, tsteal, tguest, tgn;
-  info >> tuser >> tnice >> tsys >> tidle >> twait >> tirq >> tsoft >> tsteal >> tguest >> tgn;
+  ss >> cpu >> tuser >> tnice >> tsys >> tidle >> twait >> tirq >> tsoft >> tsteal >> tguest >> tgn;
   return tidle + twait;
 }
 
