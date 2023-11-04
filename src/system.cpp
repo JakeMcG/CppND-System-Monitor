@@ -13,19 +13,24 @@ using std::set;
 using std::size_t;
 using std::string;
 using std::vector;
-/*You need to complete the mentioned TODOs in order to satisfy the rubric criteria "The student will be able to extract and display basic data about the system."
 
-You need to properly format the uptime. Refer to the comments mentioned in format. cpp for formatting the uptime.*/
-
-// TODO: Return the system's CPU
 Processor& System::Cpu() { return cpu_; }
 
 vector<Process>& System::Processes() { 
   vector<int> pids = LinuxParser::Pids();
-  processes_ = vector<Process>{};
   for (auto p : pids) {
-    processes_.push_back(Process{p});
+    // check if the process exists already
+    // process objects are persistent to track CPU usage
+    if (std::find(pids_.begin(), pids_.end(), p) == pids_.end()) {
+      // new pid
+      processes_.push_back(Process{p});
+      pids_.push_back(p);
+    } 
   }
+  for (auto &p : processes_) {
+    p.UpdateUtilization(); // before sorting
+  }
+  std::sort(processes_.rbegin(), processes_.rend()); // descending order
   return processes_; 
 }
 
